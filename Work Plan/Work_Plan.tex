@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage[T1]{fontenc}
+
+\usepackage{enumitem}
+\usepackage{lmodern}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+ 
+\urlstyle{same}
+
+\title{Observational Studies\\Work Plan}
+\author{Chris Hayduk}
+\date{\today}
+
+\begin{document}
+%\linespread{1.5}
+
+\doublespacing
+
+\maketitle
+
+\section{Introduction \& Research Questions}
+\quad The national government for each sovereign country usually focuses its efforts on broad goals, such as improving the education-level of the populace or strengthening national security. Economic growth is perhaps the most important of these goals, as a strengthening economy usually leads to higher wages and an improved standard of living for a country's population. One of the most common and well-known measures of economic strength is annual Gross Domestic Product (GDP), which measures the value of all goods and services produced in a country within a given year. GDP per capita divides this value by the country's total population, thus providing us with a proxy for the average wealth (and thus standard of living) in a country.\\
+\null\quad There are many factors that contribute towards GDP per capita growth. This project will specifically examine the effects of foreign investment on a country's GDP per capita, as the dichotomy between isolationist and globalist economic principles has become very pronounced over the last few years. The amount of foreign investment that a country receives can be used as a measure of its location on the globalist-isolationist scale of economic principles. This analysis should shed some light on the debate between isolationist and globalist trade policies.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Data Sources}
+\quad Data on GDP per capita as well as Foreign Direct Investment can be found on The World Bank's Open Data \href{https://data.worldbank.org/}{website.} The data for each variable is contained in separate tables on the website. However, they can be downloaded as CSVs and can be easily combined into a single data frame using R. The World Bank data includes statistics for every sovereign nation, as well as aggregated statistics for several important subsets of the data (eg. continents, regions, high/low income countries, etc).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+\quad I will first examine the relationship between GDP per capita and Foreign Direct Investment without matching. I will then include several covariates and use pairwise matching in order to account for said covariates. These covariates will include region and average educational level. Other covariates may be added as the analysis is conducted.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Timeline}
+\quad The summary report for the project is due in 4 weeks. Here is the weekly timeline breakdown for this time period:
+\begin{itemize}[noitemsep]
+    \item Week 1 - Data aggregation and cleaning
+    \item Week 2 - Exploratory data analysis
+    \item Week 3 - Matching and causal inference
+    \item Week 4 - Refinement of analysis and completion of write-up
+\end{itemize}
+
+\end{document}
