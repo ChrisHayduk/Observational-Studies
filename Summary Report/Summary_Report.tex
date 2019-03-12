@@ -5,6 +5,8 @@
 
 \usepackage{enumitem}
 \usepackage{lmodern}
+\usepackage{graphicx}
+
 
 \usepackage{hyperref}
 \hypersetup{
@@ -12,6 +14,7 @@
     linkcolor=blue,
     filecolor=magenta,      
     urlcolor=cyan,
+    citecolor=red
 }
  
 \urlstyle{same}
@@ -31,7 +34,7 @@
 \section{Introduction \& Research Questions}
 \quad The national government for each sovereign country usually focuses its efforts on broad goals, such as improving the education-level of the populace or strengthening national security. Economic growth is perhaps the most important of these goals, as a strengthening economy usually leads to higher wages and an improved standard of living for a country's population. One of the most common and well-known measures of economic strength is annual Gross Domestic Product (GDP), which measures the value of all goods and services produced in a country within a given year. GDP per capita divides this value by the country's total population, thus providing us with a proxy for the average wealth (and thus standard of living) in a country.\\
 \null\quad There are many factors that contribute towards GDP per capita growth. This paper will specifically examine the effects of gross foreign direct investment (FDI) on a country's GDP per capita. The dichotomy between isolationist and globalist economic principles has become very pronounced over the last few years, especially in traditionally high income countries such as France, the United Kingdom, and the United States. These heated elections in various world powers have brought FDI to the forefront of national and international debates.\\
-\null\quad There have been quite a few papers examining the effects of foreign direct investment on the growth rate of developing countries. These papers contend that developing countries are able to benefit from the improved business practices and advanced technology provided by higher income countries. However, this effect does not apply when limiting the scope of our analysis to the effects of FDI in high income countries, since they already possess a high level of technological advancement and business sophistication. Due to the heated discourse surrounding globalist economic principles and the lack of studies in this area, I will be focusing on gross FDI's impact on the growth rate of GDP per capita solely in high income countries in this paper.
+\null\quad There have been quite a few papers examining the effects of foreign direct investment on the growth rate of developing countries \cite{borensztein, hansen}. These papers contend that developing countries are able to benefit from the improved business practices and advanced technology provided by higher income countries \cite{borensztein}. However, this effect does not apply when limiting the scope of our analysis to the effects of FDI in high income countries, since they already possess a high level of technological advancement and business sophistication. Due to the heated discourse surrounding globalist economic principles and the lack of studies in this area, I will be focusing on gross FDI's impact on the growth rate of GDP per capita solely in high income countries in this paper.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data Sources}
 \quad Data on Gross Foreign Direct Investment was obtained from the OECD \href{https://data.oecd.org/}{website.} The data is labeled as "FDI stocks" and measures the total amount of foreign direct investment in a given year. The OECD website provides the option to download FDI stocks measured in US dollars or as a percent of the country's GDP. In order to control for varying economy sizes, I chose to download FDI stocks as a percent of the country's GDP. The data is available for the years 2005-2017, which is fine for the purposes of this paper, as I intend to focus on data from the 21\textsuperscript{st} century.\\
@@ -68,6 +71,14 @@ Change in Log(GDP per Capita) & 35 & 0.323 & 0.259 & $-$0.192 & 1.042 \\
 \end{tabular} 
 \end{table}
 
+I have also included a pairs plot in order to show the correlations between each pair of variables:
+\begin{figure}	
+	\centering
+	\includegraphics[width=\linewidth]{Rplot.png}
+	\caption{Pairs plot of all variables included in the regression models.}
+	\label{fig:pairs}
+\end{figure}
+\newpage
 The regression models will now explore if mean Gross Foreign Direct Investment is a statistically significant predictor of the change in log(GDP per capita) for the period from 2005 to 2017 among high-income countries. I have decided to run three regressions. The first only explores the relationship between mean FDI and change in log(GDP per capita) without considering any covariates. The second model attempts to control for the differences in technological advancements between countries by including mean journal articles per 100K inhabitants. Lastly, the third model controls for differences in the starting wealth of each country's population by including log(GDP per capita in 2005) as a predictor. The results of these regressions are shown below:
 \begin{table}[!htbp] \centering 
   \caption{Results} 
@@ -106,10 +117,18 @@ F Statistic & 0.00001 (df = 1; 33) & 3.884$^{**}$ (df = 2; 32) & 14.676$^{***}$ 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
-\quad We can see from the regression output that Gross Foreign Domestic Investment is not on its own a significant predictor of GDP per capita growth in high income countries in the 21\textsuperscript{st} century.
+\quad We can see from the regression output that Gross Foreign Domestic Investment is not on its own a significant predictor of GDP per capita growth in high income countries in the 21\textsuperscript{st} century. It is also not significant when controlling for technological advancement. However, when controlling for both log(GDP per capita in 2005) and technological advancement, we see a small but significant (at the level $\alpha = 0.02$) positive effect from the mean gross foreign direct investment on the change in log(GDP per capita). As a result, we can conclude that, given a country with particular levels of individual wealth and technological advancement, an increased level of gross foreign direct investment will have a small positive effect on GDP per capita growth.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \begin{thebibliography}{9}
+\bibitem{borensztein}
+Eduardo Borensztein, Jose De Gregorio, Jong-Wha Lee.
+\textit{How Does Foreign Direct Investment Affect Economic Growth?}. NBER Working Paper Series, March 1995.
+
+\bibitem{hansen}
+Henrik Hansen, John Rand.
+\textit{On the Causal Links between FDI and Growth in Developing Countries}.
+World Institute for Development Economics Research, June 2005.
 
 \end{thebibliography}
 \end{document}

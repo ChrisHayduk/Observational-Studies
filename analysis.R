@@ -53,10 +53,10 @@ data <- merge(data, mean_fdi, by="country")
 
 data <- merge(data, mean_articles, by = "country")
 
-names(data) <- c("country", "gdp_per_capita_2005", "gdp_per_capita_2017", "mean_fdi", "journal_articles_per_1000_inhabitants")
+names(data) <- c("country", "gdp_per_capita_2005", "gdp_per_capita_2017", "mean_fdi", "journal_articles_per_100k_inhabitants")
 
 #Run model
-model <- lm(gdp_per_capita_2017 ~ gdp_per_capita_2005 + mean_fdi + journal_articles_per_1000_inhabitants, data)
+model <- lm(gdp_per_capita_2017 ~ gdp_per_capita_2005 + mean_fdi + journal_articles_per_100k_inhabitants, data)
 
 summary(model)
 
@@ -88,10 +88,13 @@ high_income$perc_increase_in_gdp_per_capita <- perc_increase_in_gdp_per_capita
 
 #High income model
 high_income_model1 <- lm(change_in_log_gdp ~ mean_fdi, high_income)
-high_income_model2 <- lm(change_in_log_gdp ~ mean_fdi + journal_articles_per_1000_inhabitants, high_income)
-high_income_model3 <- lm(change_in_log_gdp ~ log_starting_gdp + mean_fdi + journal_articles_per_1000_inhabitants, high_income)
+high_income_model2 <- lm(change_in_log_gdp ~ mean_fdi + journal_articles_per_100k_inhabitants, high_income)
+high_income_model3 <- lm(change_in_log_gdp ~ log_starting_gdp + mean_fdi + journal_articles_per_100k_inhabitants, high_income)
+high_income_model4 <- lm(change_in_log_gdp ~ log_starting_gdp*mean_fdi + journal_articles_per_100k_inhabitants, high_income)
+stargazer(high_income_model1, high_income_model2, high_income_model3, high_income_model4, title="Results")
 
-stargazer(high_income_model1, high_income_model2, high_income_model3, title="Results")
-pairs(high_income[,c("log_starting_gdp", "log_ending_gdp", "change_in_log_gdp", "mean_fdi", "journal_articles_per_1000_inhabitants")])
+colnames(high_income)[5] <- "journal_articles"
+pairs(high_income[,c("log_starting_gdp", "change_in_log_gdp", "mean_fdi", "journal_articles")], 
+      las=TRUE, pch=19, col="firebrick", cex.labels = 1)
 
 stargazer(high_income)
