@@ -1,100 +1,89 @@
 library(tidyverse)
 library(stargazer)
+library(bsts)
+library(reshape2)
 
 #Load data
 gdp_per_capita <- read_csv("C:\\Users\\Chris\\Desktop\\Observational-Studies\\Data\\GDP per Capita (2005 - 2017).csv")
+gdp_per_capita <- melt(gdp_per_capita, id.vars=1:2, value.name="GDP_Per_Capita", variable.name="Year")
+
+gdp_per_capita <- gdp_per_capita[order(gdp_per_capita$`Country Code`),]
 
 fdi <- read_csv("C:\\Users\\Chris\\Desktop\\Observational-Studies\\Data\\FDI as Percent of GDP (2005 - 2017).csv")
 
 fdi <- fdi[,1:7]
 
+fdi <- data.frame(`Country Code` = fdi$LOCATION, Year = fdi$TIME, FDI = fdi$Value)
+colnames(fdi) <- c("Country Code", "Year", "FDI")
+
+tertiary_school <- read_csv("C:\\Users\\Chris\\Desktop\\Observational-Studies\\Data\\Tertiary_School_Completion.csv")
+
+tertiary_school <- tertiary_school[,1:7]
+
+tertiary_school <- data.frame(`Country Code` = tertiary_school$LOCATION, Year = tertiary_school$TIME, FDI = tertiary_school$Value)
+colnames(tertiary_school) <- c("Country Code", "Year", "Completion_Rate")
+
 journal_articles <- read_csv("C:\\Users\\Chris\\Desktop\\Observational-Studies\\Data\\Scientific and technical journal articles.csv")
-
-#Create data frame
-data <- data.frame(country = gdp_per_capita$`Country Code`, gdp_2005 = gdp_per_capita$`2005`, gdp_2017 = gdp_per_capita$`2017`)
-
-#Remove rows with NAs
-#data <- data[complete.cases(data), ]
-
-#fdi <- fdi[complete.cases(fdi), ]
-
-#Get mean FDI over period of interest
-mean_fdi <- aggregate(fdi[,7], list(country = fdi$LOCATION), mean)
-
-#Get mean number of journal articles over period of interest
-journal_articles$total <- rowSums(journal_articles[,3:14], na.rm=TRUE)
-
-mean_articles <- data.frame(country = journal_articles$`Country Code`, articles = (journal_articles$total)/12.0)
-
-names(mean_fdi) <- c("country", "fdi")
+journal_articles <- melt(journal_articles, id.vars=1:2, value.name="Journal Articles", variable.name="Year")
+journal_articles <- journal_articles[order(journal_articles$`Country Code`),]
 
 #Load population data so we can adjust number of journal articles
 pop_data <-  read_csv("C:\\Users\\Chris\\Desktop\\Observational-Studies\\Data\\Population by Country.csv")
+pop_data <- melt(pop_data, id.vars=1:2, value.name="Pop", variable.name="Year")
+pop_data <- pop_data[order(pop_data$`Country Code`),]
 
-pop_data <- pop_data[complete.cases(pop_data),]
+pop_data$Pop <- pop_data$Pop/100000.0
 
-pop_data$total <- rowSums(pop_data[,3:15], na.rm=TRUE)
+article_data <- merge(journal_articles, pop_data, by = c("Country Code", "Year"))
 
-pop_data$total <- pop_data$total/100000.0
-
-mean_pop <- data.frame(country = pop_data$`Country Code`, pop = (pop_data$total)/13.0)
-
-article_data <- merge(mean_articles, mean_pop, by = "country")
-
-mean_articles <- data.frame(country = article_data$country, articles = (article_data$articles)/(article_data$pop))
-
+articles_per_100000 <- data.frame(`Country Code` = article_data$`Country Code`, 
+                                  articles = (article_data$`Journal Articles`)/(article_data$Pop), year = article_data$Year)
+colnames(articles_per_100000) <- c("Country Code", "Articles", "Year")
 #Create final data frame
 #Includes the following:
 # GDP per capita in 2005
 # GDP per capita in 2017
 # Mean Gross FDI from 2005-2017
 # Mean number of scientific journal articles published per 1000 inhabitants from 2005-2016
-data <- merge(data, mean_fdi, by="country")
+data <- merge(gdp_per_capita, fdi, by=c("Country Code", "Year"))
 
-data <- merge(data, mean_articles, by = "country")
+data <- merge(data, articles_per_100000, by = c("Country Code", "Year"))
 
-names(data) <- c("country", "gdp_per_capita_2005", "gdp_per_capita_2017", "mean_fdi", "journal_articles_per_100k_inhabitants")
+data <- merge(data, tertiary_school, by = c("Country Code", "Year"))
 
+data <- data[complete.cases(data),]
+
+new_data <- data[data$`Country Code` == 'USA',]
 #Run model
-model <- lm(gdp_per_capita_2017 ~ gdp_per_capita_2005 + mean_fdi + journal_articles_per_100k_inhabitants, data)
+ss <- AddLocalLinearTrend(list(), new_data$GDP_Per_Capita)
 
-summary(model)
+model1 <- bsts(new_data$GDP_Per_Capita,
+               state.specification = ss,
+               niter = 10000)
 
-#Now let's group countries by income level
-income_levels <- read_csv("C:\\Users\\Chris\\Desktop\\Observational-Studies\\Data\\Metadata for GDP per Capita Table.csv")
-income_levels <- income_levels[,c("Country Code", "IncomeGroup")]
-names(income_levels) <- c("country", "income_level")
+plot(model1)
+plot(model1, "comp")
 
-data <- merge(data, income_levels, by="country")
+pred1 <- predict(model1, horizon = 12)
+plot(pred1, plot.original = 156)
 
-#Create change in GDP and log GDP columns
-data$change_in_gdp <- data$gdp_per_capita_2017 - data$gdp_per_capita_2005
+model2 <- bsts(new_data$GDP_Per_Capita ~ new_data$FDI + new_data$Articles + new_data$Completion_Rate,
+               state.specification = ss,
+               niter = 10000,
+               data = new_data, 
+               expected.model.size = 1)
 
-data$log_starting_gdp <- log(data$gdp_per_capita_2005)
+model3 <- bsts(new_data$GDP_Per_Capita ~ new_data$FDI + new_data$Articles + new_data$Completion_Rate,
+               state.specification = ss,
+               niter = 10000,
+               data = new_data,
+               expected.model.size = 3)
 
-data$log_ending_gdp <- log(data$gdp_per_capita_2017)
+CompareBstsModels(list("Model 1" = model1,
+                      "Model 2" = model2,
+                      "Model 3" = model3),
+                 colors = c("black", "red", "blue"))
 
-data$change_in_log_gdp <- data$log_ending_gdp - data$log_starting_gdp
 
-#Separate high income countries
-high_income <- data[data$income_level == "High income",]
-high_income <- high_income[complete.cases(high_income),]
-middle_income <- data[data$income_level == "Upper middle income" | data$income_level == "Lower middle income",]
-middle_income <- middle_income[complete.cases(middle_income),]
 
-#Create percent increase in GDP column
-perc_increase_in_gdp_per_capita <- (high_income$gdp_per_capita_2017 - high_income$gdp_per_capita_2005)/(high_income$gdp_per_capita_2005)*100
-high_income$perc_increase_in_gdp_per_capita <- perc_increase_in_gdp_per_capita
 
-#High income model
-high_income_model1 <- lm(change_in_log_gdp ~ mean_fdi, high_income)
-high_income_model2 <- lm(change_in_log_gdp ~ mean_fdi + journal_articles_per_100k_inhabitants, high_income)
-high_income_model3 <- lm(change_in_log_gdp ~ log_starting_gdp + mean_fdi + journal_articles_per_100k_inhabitants, high_income)
-high_income_model4 <- lm(change_in_log_gdp ~ log_starting_gdp*mean_fdi + journal_articles_per_100k_inhabitants, high_income)
-stargazer(high_income_model1, high_income_model2, high_income_model3, high_income_model4, title="Results")
-
-colnames(high_income)[5] <- "journal_articles"
-pairs(high_income[,c("log_starting_gdp", "change_in_log_gdp", "mean_fdi", "journal_articles")], 
-      las=TRUE, pch=19, col="firebrick", cex.labels = 1)
-
-stargazer(high_income)
